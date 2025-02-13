@@ -1,0 +1,92 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <iomanip>
+#include <cctype> /
+
+using namespace std;
+
+float getGradePoint(char grade) {
+    grade = toupper(grade);
+    switch (grade) {
+        case 'A': return 4.0;
+        case 'B': return 3.0;
+        case 'C': return 2.0;
+        case 'D': return 1.0;
+        case 'F': return 0.0;
+        default: return -1.0; 
+    }
+}
+
+int main() {
+    int numCourses;
+    float totalCredits = 0.0;
+    float totalGradePoints = 0.0;
+
+    cout << "Welcome to the CGPA Calculator!\n";
+    cout << "Enter the number of courses: ";
+    cin >> numCourses;
+
+    if (numCourses <= 0) {
+        cout << "Invalid number of courses. Exiting.\n";
+        return 1; 
+    }
+
+    cin.ignore(); 
+
+    vector<string> courseNames(numCourses);
+    vector<char> grades(numCourses);
+    vector<float> credits(numCourses);
+
+    for (int i = 0; i < numCourses; i++) {
+        cout << "\nEnter details for course " << i + 1 << ":\n";
+
+        cout << "Course Name: ";
+        getline(cin, courseNames[i]);
+
+        while (true) { 
+            cout << "Grade (A/B/C/D/F): ";
+            cin >> grades[i];
+            if (getGradePoint(grades[i]) != -1.0) {
+                break;
+            }
+            cout << "Invalid grade. Please enter A, B, C, D, or F.\n";
+            cin.clear(); 
+            cin.ignore(numeric_limits<streamsize>::max(), '\n'); 
+        }
+
+        while (true) { 
+            cout << "Credits: ";
+            cin >> credits[i];
+            if (credits[i] > 0) {
+                break;
+            }
+            cout << "Invalid credits. Please enter a positive number.\n";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        }
+        cin.ignore(); 
+
+        totalGradePoints += getGradePoint(grades[i]) * credits[i];
+        totalCredits += credits[i];
+    }
+
+    double gpa = (totalCredits == 0) ? 0.0 : totalGradePoints / totalCredits;
+
+    cout << "\n--------------------------------\n";
+    cout << "Semester Report\n";
+    cout << "--------------------------------\n";
+    cout << setw(20) << left << "Course" << " | " << setw(5) << "Grade" << " | " << setw(7) << "Credits\n";
+    cout << "--------------------------------\n";
+
+    for (int i = 0; i < numCourses; i++) {
+        cout << setw(20) << left << courseNames[i] << " | " << setw(5) << grades[i] << " | " << fixed << setprecision(1) << setw(7) << credits[i] << endl;
+    }
+
+    cout << "--------------------------------\n";
+    cout << "Total Credits: " << fixed << setprecision(1) << totalCredits << endl;
+    cout << "Total Grade Points: " << fixed << setprecision(2) << totalGradePoints << endl;
+    cout << "Semester GPA: " << fixed << setprecision(2) << gpa << endl;
+
+    return 0;
+}
