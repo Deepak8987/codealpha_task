@@ -1,0 +1,180 @@
+#include <iostream>
+#include <fstream>
+#include <vector>
+
+using namespace std;
+
+class Account {
+public:
+    string accountNumber;
+    string holderName;
+    double balance;
+
+    Account(string accNum, string name, double initialBalance) {
+        accountNumber = accNum;
+        holderName = name;
+        balance = initialBalance;
+    }
+
+    void deposit(double amount) {
+        balance += amount;
+        cout << "Deposit Successful! New Balance: $" << balance << endl;
+    }
+
+    bool withdraw(double amount) {
+        if (amount > balance) {
+            cout << "Insufficient Balance!" << endl;
+            return false;
+        }
+        balance -= amount;
+        cout << "Withdrawal Successful! New Balance: $" << balance << endl;
+        return true;
+    }
+
+    void display() {
+        cout << "Account Number: " << accountNumber << "\nHolder Name: " << holderName << "\nBalance: $" << balance << endl;
+    }
+};
+
+class BankingSystem {
+private:
+    vector<Account> accounts;
+
+public:
+    void createAccount() {
+        string accNum, name;
+        double initialBalance;
+        cout << "Enter Account Number: ";
+        cin >> accNum;
+        cout << "Enter Holder Name: ";
+        cin.ignore();
+        getline(cin, name);
+        cout << "Enter Initial Balance: ";
+        cin >> initialBalance;
+
+        accounts.push_back(Account(accNum, name, initialBalance));
+        saveToFile();
+        cout << "Account Created Successfully!" << endl;
+    }
+
+    void depositMoney() {
+        string accNum;
+        double amount;
+        cout << "Enter Account Number: ";
+        cin >> accNum;
+
+        for (auto &acc : accounts) {
+            if (acc.accountNumber == accNum) {
+                cout << "Enter Deposit Amount: ";
+                cin >> amount;
+                acc.deposit(amount);
+                saveToFile();
+                return;
+            }
+        }
+        cout << "Account Not Found!" << endl;
+    }
+
+    void withdrawMoney() {
+        string accNum;
+        double amount;
+        cout << "Enter Account Number: ";
+        cin >> accNum;
+
+        for (auto &acc : accounts) {
+            if (acc.accountNumber == accNum) {
+                cout << "Enter Withdrawal Amount: ";
+                cin >> amount;
+                if (acc.withdraw(amount)) {
+                    saveToFile();
+                }
+                return;
+            }
+        }
+        cout << "Account Not Found!" << endl;
+    }
+
+    void transferMoney() {
+        string senderAcc, receiverAcc;
+        double amount;
+        cout << "Enter Sender Account Number: ";
+        cin >> senderAcc;
+        cout << "Enter Receiver Account Number: ";
+        cin >> receiverAcc;
+        cout << "Enter Transfer Amount: ";
+        cin >> amount;
+
+        Account *sender = nullptr, *receiver = nullptr;
+
+        for (auto &acc : accounts) {
+            if (acc.accountNumber == senderAcc) sender = &acc;
+            if (acc.accountNumber == receiverAcc) receiver = &acc;
+        }
+
+        if (sender && receiver) {
+            if (sender->withdraw(amount)) {
+                receiver->deposit(amount);
+                saveToFile();
+                cout << "Transfer Successful!" << endl;
+            }
+        } else {
+            cout << "Invalid Account Details!" << endl;
+        }
+    }
+
+    void displayAccounts() {
+        if (accounts.empty()) {
+            cout << "No Accounts Found!" << endl;
+            return;
+        }
+        for (auto &acc : accounts) {
+            acc.display();
+            cout << "--------------------------\n";
+        }
+    }
+
+    void loadFromFile() {
+        ifstream file("accounts.txt");
+        if (!file) return;
+
+        string accNum, name;
+        double balance;
+        while (file >> accNum >> balance) {
+            file.ignore();
+            getline(file, name);
+            accounts.push_back(Account(accNum, name, balance));
+        }
+        file.close();
+    }
+
+    void saveToFile() {
+        ofstream file("accounts.txt");
+        for (auto &acc : accounts) {
+            file << acc.accountNumber << " " << acc.balance << "\n" << acc.holderName << "\n";
+        }
+        file.close();
+    }
+};
+
+int main() {
+    BankingSystem bank;
+    bank.loadFromFile();
+
+    int choice;
+    while (true) {
+        cout << "\n===== Banking System =====\n";
+        cout << "1. Create Account\n2. Deposit\n3. Withdraw\n4. Transfer Money\n5. Display Accounts\n6. Exit\n";
+        cout << "Enter Your Choice: ";
+        cin >> choice;
+
+        switch (choice) {
+            case 1: bank.createAccount(); break;
+            case 2: bank.depositMoney(); break;
+            case 3: bank.withdrawMoney(); break;
+            case 4: bank.transferMoney(); break;
+            case 5: bank.displayAccounts(); break;
+            case 6: cout << "Exiting...\n"; return 0;
+            default: cout << "Invalid Choice! Try Again.\n";
+        }
+    }
+}
