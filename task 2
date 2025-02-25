@@ -1,0 +1,90 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+bool login();
+void registration();
+void forgotPassword();
+
+int main() {
+    int choice;
+    while (true) {
+        cout << "\n===== Login & Registration System =====" << endl;
+        cout << "1. Login\n2. Register\n3. Forgot Password\n4. Exit\n";
+        cout << "Enter your choice: ";
+        cin >> choice;
+        
+        switch (choice) {
+            case 1:
+                if (login()) {
+                    cout << "\nLogin Successful!\n";
+                } else {
+                    cout << "\nInvalid Credentials!\n";
+                }
+                break;
+            case 2:
+                registration();
+                break;
+            case 3:
+                forgotPassword();
+                break;
+            case 4:
+                cout << "Exiting...\n";
+                return 0;
+            default:
+                cout << "Invalid Choice! Try Again.\n";
+        }
+    }
+    return 0;
+}
+
+bool login() {
+    string username, password, user, pass;
+    cout << "Enter Username: ";
+    cin >> username;
+    cout << "Enter Password: ";
+    cin >> password;
+
+    ifstream input("database.txt");  // Open file for reading
+    while (input >> user >> pass) {  // Read username and password from file
+        if (user == username && pass == password) {
+            input.close();
+            return true;  // Login successful
+        }
+    }
+    input.close();
+    return false;  // Login failed
+}
+
+void registration() {
+    string username, password;
+    cout << "Choose a Username: ";
+    cin >> username;
+    cout << "Choose a Password: ";
+    cin >> password;
+
+    ofstream output("database.txt", ios::app);  // Open file in append mode
+    output << username << " " << password << endl;
+    output.close();
+    
+    cout << "Registration Successful!\n";
+}
+
+void forgotPassword() {
+    string username, user, pass;
+    cout << "Enter your registered Username: ";
+    cin >> username;
+
+    ifstream input("database.txt");
+    while (input >> user >> pass) {
+        if (user == username) {
+            cout << "Your password is: " << pass << endl;
+            input.close();
+            return;
+        }
+    }
+    input.close();
+    cout << "User not found!\n";
+}
